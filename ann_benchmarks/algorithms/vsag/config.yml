@@ -1,11 +1,24 @@
 float:
   any:
   - base_args: ['@metric', '@dimension']
-    constructor: Vsag
+    constructor: VsagHGraph
     disabled: false
     docker_tag: ann-benchmarks-vsag
     module: ann_benchmarks.algorithms.vsag
-    name: vsag
+    name: hgraph(vsag)
+    run_groups:
+      HGraph:
+        args:
+          max_degree: [16, 32, 48, 64]
+          ef_construction: 400
+          alpha: [1.0, 1.2]
+        query_args: [[10, 20, 30, 40, 60, 80, 120, 200, 400, 600, 800]]
+  - base_args: ['@metric', '@dimension']
+    constructor: VsagHNSW
+    disabled: false
+    docker_tag: ann-benchmarks-vsag
+    module: ann_benchmarks.algorithms.vsag
+    name: hnsw(vsag)
     run_groups:
       HNSW:
         args:
