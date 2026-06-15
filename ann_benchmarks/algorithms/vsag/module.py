@@ -14,14 +14,18 @@ class Vsag(BaseANN):
         self._normalize = metric == "angular"
         self._dim = dim
         self._params = method_param
-        self._ef = None
+        self._ef = 10
         self.name = "vsag-%s (%s)" % (self.index_name, self._params)
 
     def _index_params(self, X):
+        dim = X.shape[1]
+        if self._dim != dim:
+            raise ValueError("Configured dimension %d does not match data dimension %d" % (self._dim, dim))
+
         return {
             "dtype": "float32",
             "metric_type": self._metric,
-            "dim": self._dim,
+            "dim": dim,
             self.build_param_key: self._build_params(len(X)),
         }
 
@@ -49,7 +53,7 @@ class Vsag(BaseANN):
 
         norm = np.linalg.norm(v)
         if norm == 0:
-            return np.ascontiguousarray(v)
+            return np.full(v.shape, 1.0 / np.sqrt(v.shape[0]), dtype=np.float32)
         return np.ascontiguousarray(v / norm, dtype=np.float32)
 
     def fit(self, X):
@@ -94,8 +98,6 @@ class VsagHNSW(Vsag):
 
         if self._params.get("use_int8", 0) != 0:
             params["sq_num_bits"] = self._params["use_int8"]
-        if "alpha" in self._params:
-            params["alpha"] = self._params["alpha"]
         if "rs" in self._params:
             params["redundant_rate"] = self._params["rs"]
         return params
